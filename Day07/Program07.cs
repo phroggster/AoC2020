@@ -26,72 +26,79 @@ namespace Day07
     {
         static void Main(string[] _)
         {
-            Part1();
-            Part2();
+            Part1.Exec();
+            Part2.Exec();
         }
+    }
 
-        /*
-         * --- Day 7: Handy Haversacks ---
-         * You land at the regional airport in time for your next flight. In fact, it looks like you'll even have time
-         * to grab some food: all flights are currently delayed due to issues in luggage processing.
-         * 
-         * Due to recent aviation regulations, many rules (your puzzle input) are being enforced about bags and their
-         * contents; bags must be color-coded and must contain specific quantities of other color-coded bags.
-         * Apparently, nobody responsible for these regulations considered how long they would take to enforce!
-         * 
-         * For example, consider the following rules:
-         * 
-         * light red bags contain 1 bright white bag, 2 muted yellow bags.
-         * dark orange bags contain 3 bright white bags, 4 muted yellow bags.
-         * bright white bags contain 1 shiny gold bag.
-         * muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.
-         * shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
-         * dark olive bags contain 3 faded blue bags, 4 dotted black bags.
-         * vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
-         * faded blue bags contain no other bags.
-         * dotted black bags contain no other bags.
-         * 
-         * These rules specify the required contents for 9 bag types. In this example, every faded blue bag is empty,
-         * every vibrant plum bag contains 11 bags (5 faded blue and 6 dotted black), and so on.
-         * 
-         * You have a shiny gold bag. If you wanted to carry it in at least one other bag, how many different bag
-         * colors would be valid for the outermost bag? (In other words: how many colors can, eventually, contain at
-         * least one shiny gold bag?)
-         * 
-         * In the above rules, the following options would be available to you:
-         * 
-         * A bright white bag, which can hold your shiny gold bag directly.
-         * A muted yellow bag, which can hold your shiny gold bag directly, plus some other bags.
-         * A dark orange bag, which can hold bright white and muted yellow bags, either of which could then hold your
-         * shiny gold bag.
-         * A light red bag, which can hold bright white and muted yellow bags, either of which could then hold your
-         * shiny gold bag.
-         * 
-         * So, in this example, the number of bag colors that can eventually contain at least one shiny gold bag is 4.
-         * 
-         * How many bag colors can eventually contain at least one shiny gold bag? (The list of rules is quite long;
-         * make sure you get all of it.)
-         */
-        static void Part1()
+    /*
+     * --- Day 7: Handy Haversacks ---
+     * You land at the regional airport in time for your next flight. In fact, it looks like you'll even have time
+     * to grab some food: all flights are currently delayed due to issues in luggage processing.
+     * 
+     * Due to recent aviation regulations, many rules (your puzzle input) are being enforced about bags and their
+     * contents; bags must be color-coded and must contain specific quantities of other color-coded bags.
+     * Apparently, nobody responsible for these regulations considered how long they would take to enforce!
+     * 
+     * For example, consider the following rules:
+     * 
+     * light red bags contain 1 bright white bag, 2 muted yellow bags.
+     * dark orange bags contain 3 bright white bags, 4 muted yellow bags.
+     * bright white bags contain 1 shiny gold bag.
+     * muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.
+     * shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
+     * dark olive bags contain 3 faded blue bags, 4 dotted black bags.
+     * vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
+     * faded blue bags contain no other bags.
+     * dotted black bags contain no other bags.
+     * 
+     * These rules specify the required contents for 9 bag types. In this example, every faded blue bag is empty,
+     * every vibrant plum bag contains 11 bags (5 faded blue and 6 dotted black), and so on.
+     * 
+     * You have a shiny gold bag. If you wanted to carry it in at least one other bag, how many different bag
+     * colors would be valid for the outermost bag? (In other words: how many colors can, eventually, contain at
+     * least one shiny gold bag?)
+     * 
+     * In the above rules, the following options would be available to you:
+     * 
+     * A bright white bag, which can hold your shiny gold bag directly.
+     * A muted yellow bag, which can hold your shiny gold bag directly, plus some other bags.
+     * A dark orange bag, which can hold bright white and muted yellow bags, either of which could then hold your
+     * shiny gold bag.
+     * A light red bag, which can hold bright white and muted yellow bags, either of which could then hold your
+     * shiny gold bag.
+     * 
+     * So, in this example, the number of bag colors that can eventually contain at least one shiny gold bag is 4.
+     * 
+     * How many bag colors can eventually contain at least one shiny gold bag? (The list of rules is quite long;
+     * make sure you get all of it.)
+     */
+    class Part1
+    {
+        public static void Exec()
         {
-            List<string> parents = new List<string>();
-            // sanity check
-            {
-                GetAllParents("shiny gold", ref parents, ParseRules(Data.examples.Item1));
-                if (parents.Count != Data.examples.Item2)
-                    throw new ApplicationException("Test data was not validated correctly, cannot continue");
-                parents.Clear();
-            }
+            Validate();
 
-            // How many bag colors can eventually contain at least one shiny gold bag?
+            List<string> parents = new List<string>();
             GetAllParents("shiny gold", ref parents, ParseRules(Data.actual));
+
             Console.WriteLine(parents.Count);
             // Solution: 259
         }
 
-        static void Part2()
+        static void GetAllParents(in string key, ref List<string> parents, in Dictionary<string, List<string>> rules)
         {
-            throw new NotImplementedException();
+            if (!rules.ContainsKey(key))
+                return;
+
+            foreach (var parent in rules[key])
+            {
+                if (!parents.Contains(parent))
+                {
+                    parents.Add(parent);
+                    GetAllParents(parent, ref parents, rules);
+                }
+            }
         }
 
         // KEY is a color, VALUE is the various colors that must contain KEY. 
@@ -137,25 +144,145 @@ namespace Day07
             return result;
         }
 
-        static void GetAllParents(in string key, ref List<string> parents, in Dictionary<string, List<string>> rules)
+        static void Validate()
         {
-            if (!rules.ContainsKey(key))
-                return;
+            List<string> parents = new List<string>();
+            GetAllParents("shiny gold", ref parents, ParseRules(Data.examples.Item1));
+            if (parents.Count != Data.examples.Item2)
+                throw new ApplicationException("Test data was not validated correctly, cannot continue");
+        }
+    }
 
-            foreach (var parent in rules[key])
+    /*
+     * --- Part Two ---
+     * It's getting pretty expensive to fly these days - not because of ticket prices, but because of the
+     * ridiculous number of bags you need to buy!
+     * 
+     * Consider again your shiny gold bag and the rules from the above example:
+     * 
+     * faded blue bags contain 0 other bags.
+     * dotted black bags contain 0 other bags.
+     * vibrant plum bags contain 11 other bags: 5 faded blue bags and 6 dotted black bags.
+     * dark olive bags contain 7 other bags: 3 faded blue bags and 4 dotted black bags.
+     * 
+     * So, a single shiny gold bag must contain 1 dark olive bag (and the 7 bags within it) plus 2 vibrant plum
+     * bags (and the 11 bags within each of those): 1 + 1*7 + 2 + 2*11 = 32 bags!
+     * 
+     * Of course, the actual rules have a small chance of going several levels deeper than this example; be sure to
+     * count all of the bags, even if the nesting becomes topologically impractical!
+     * 
+     * Here's another example:
+     * 
+     * shiny gold bags contain 2 dark red bags.
+     * dark red bags contain 2 dark orange bags.
+     * dark orange bags contain 2 dark yellow bags.
+     * dark yellow bags contain 2 dark green bags.
+     * dark green bags contain 2 dark blue bags.
+     * dark blue bags contain 2 dark violet bags.
+     * dark violet bags contain no other bags.
+     * 
+     * In this example, a single shiny gold bag must contain 126 other bags.
+     * 
+     * How many individual bags are required inside your single shiny gold bag?
+     */
+    class Part2
+    {
+        /*
+         * Inversion from part 1. Need to parse a container-to-children mapping, *** now inclusive of the numbers ***. recursion required, again.
+         */
+        public static void Exec()
+        {
+            Validate();
+
+            var result = GetAllChildren("shiny gold", ParseRules(Data.actual)).Values.Sum();
+
+            Console.Write(result);
+            // Solution: 45018
+        }
+
+        static Dictionary<string, int> GetAllChildren(in string parent, in Dictionary<string, Dictionary<string, int>> rules)
+        {
+            var result = new Dictionary<string, int>();
+
+            if (rules.ContainsKey(parent))
             {
-                if (!parents.Contains(parent))
+                foreach (var rule in rules[parent])
                 {
-                    parents.Add(parent);
-                    GetAllParents(parent, ref parents, rules);
+                    if (result.ContainsKey(rule.Key))
+                        result[rule.Key] += rule.Value;
+                    else
+                        result.Add(rule.Key, rule.Value);
+
+                    var children = GetAllChildren(rule.Key, rules);
+                    foreach (var child in children)
+                    {
+                        if (result.ContainsKey(child.Key))
+                            result[child.Key] += child.Value * rule.Value;
+                        else
+                            result.Add(child.Key, child.Value * rule.Value);
+                    }
                 }
             }
+            return result;
+        }
+
+        static Dictionary<string, Dictionary<string, int>> ParseRules(in List<string> rules)
+        {
+            const string outerSplit = " bags contain ";
+            const int outerSplitLen = 14;
+
+            var result = new Dictionary<string, Dictionary<string, int>>();
+
+            foreach (var line in rules) // "light red bags contain 1 bright white bag, 2 muted yellow bags."
+            {
+                var container = line.Split(outerSplit).First(); // "light red"
+                var contents = line.Substring(container.Length + outerSplitLen).Split(", ").ToList();   // { "1 bright white bag", "2 muted yellow bags." }
+
+                if (result.ContainsKey(container))
+                    throw new ApplicationException($"Multiple rules exists for {container} bags: ({result[container]}) vs ({contents})");
+                else if (contents.First() == "no other bags.")
+                    continue;
+
+                for (int n = 0; n < contents.Count; n++)
+                {
+                    var sChild = contents[n];  // "1 bright white bag" ... "2 muted yellow bags." ...
+                    var sNum = contents[n].Split(' ').First(); // "1" ... "2" ...
+                    var iNum = int.Parse(sNum); // 1 ... 2 ...
+                    var idxStart = sNum.Length + 1;
+
+                    if (sChild.EndsWith(" bags."))
+                        sChild = sChild.Substring(idxStart, sChild.Length - 5 - idxStart);
+                    else if (sChild.EndsWith(" bag.") || sChild.EndsWith(" bags"))
+                        sChild = sChild.Substring(idxStart, sChild.Length - 4 - idxStart);
+                    else if (sChild.EndsWith(" bag"))
+                        sChild = sChild.Substring(idxStart, sChild.Length - 3 - idxStart);
+                    else
+                        throw new ApplicationException($"Unable to parse rule '{contents[n]}'.");
+                    sChild = sChild.Trim();   // "bright white" ... "muted yellow" ...
+
+                    if (!result.ContainsKey(container))
+                        result.Add(container, new Dictionary<string, int>());
+                    result[container].Add(sChild, iNum);
+                }
+
+            }
+            return result;
+        }
+
+        static void Validate()
+        {
+            var rules = ParseRules(Data.examples.Item1);
+            var contents = GetAllChildren("shiny gold", rules);
+            var values = contents.Values;
+            var sum = values.Sum();
+            if (sum != Data.examples.Item3)
+                throw new ApplicationException("Test data was not validated correctly, cannot continue");
         }
     }
 
     static class Data
     {
-        public static readonly Tuple<List<string>, int> examples = new Tuple<List<string>, int>
+        public static readonly Tuple<List<string>, int, int> examples = new Tuple<List<string>, int, int>
         (
             new List<string>{
                 "light red bags contain 1 bright white bag, 2 muted yellow bags.",
@@ -167,7 +294,7 @@ namespace Day07
                 "vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.",
                 "faded blue bags contain no other bags.",
                 "dotted black bags contain no other bags."
-            }, 4
+            }, 4, 32
         );
 
         public static readonly List<string> actual = new List<string>
